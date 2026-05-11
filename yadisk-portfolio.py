@@ -42,7 +42,7 @@ def index():
         for item in y.listdir("/Portfolio"):
     	    if item.type == "file":
                 # Нам нужна именно прямая ссылка на скачивание, а не на страницу просмотра
-                direct_url = y.get_download_link(item.path)
+                direct_url = item.preview(item.path)
                 photos.append(direct_url)
         
         return render_template_string(HTML_TEMPLATE, photos=photos)
