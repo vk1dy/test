@@ -1,0 +1,276 @@
+{% extends "base.html" %}
+
+{% block title %}{{ album_name }} — {{ site_title }}{% endblock %}
+
+{% block head %}
+<style>
+  /* ── Album header ── */
+  .album-header {
+    padding: 6rem 3rem 3rem;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 2rem;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 3rem;
+  }
+  .album-header-left { max-width: 600px; }
+  .album-breadcrumb {
+    font-size: 0.7rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+  }
+  .album-breadcrumb a {
+    color: var(--muted);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+  .album-breadcrumb a:hover { color: var(--accent); }
+  .album-breadcrumb span { opacity: 0.4; }
+  .album-title {
+    font-family: var(--font-display);
+    font-size: clamp(2.2rem, 5vw, 3.8rem);
+    font-weight: 300;
+    letter-spacing: -0.01em;
+    line-height: 1.1;
+  }
+  .album-title em { font-style: italic; color: var(--accent); }
+  .album-meta {
+    margin-top: 0.8rem;
+    color: var(--muted);
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+  }
+  .album-header-right {
+    display: flex;
+    gap: 0.6rem;
+    flex-shrink: 0;
+  }
+  .view-btn {
+    padding: 0.5rem 1rem;
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    border: 1px solid var(--border);
+    background: none;
+    color: var(--muted);
+    cursor: pointer;
+    border-radius: var(--radius);
+    transition: all 0.2s;
+    font-family: var(--font-body);
+  }
+  .view-btn:hover, .view-btn.active {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  /* ── Subfolders ── */
+  .subfolders {
+    padding: 0 3rem 2rem;
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+  .subfolder-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1.2rem;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+    border-radius: 99px;
+    transition: all 0.2s;
+  }
+  .subfolder-link:hover {
+    border-color: var(--accent2);
+    color: var(--text);
+  }
+
+  /* ── Masonry grid ── */
+  .photo-grid {
+    padding: 0 2px 2px;
+    columns: 3;
+    column-gap: 2px;
+  }
+  .photo-grid.cols-2 { columns: 2; }
+  .photo-grid.cols-4 { columns: 4; }
+
+  .photo-item {
+    break-inside: avoid;
+    display: block;
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 2px;
+    cursor: pointer;
+    background: var(--surface);
+  }
+  .photo-item img {
+    width: 100%;
+    display: block;
+    object-fit: cover;
+    transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+                filter 0.4s;
+    filter: brightness(0.92) saturate(0.95);
+  }
+  .photo-item:hover img {
+    transform: scale(1.04);
+    filter: brightness(1) saturate(1.05);
+  }
+  .photo-overlay {
+    position: absolute; inset: 0;
+    background: rgba(0,0,0,0.25);
+    opacity: 0;
+    transition: opacity 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .photo-item:hover .photo-overlay { opacity: 1; }
+  .photo-overlay-icon {
+    width: 44px; height: 44px;
+    border: 1px solid rgba(255,255,255,0.6);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    color: rgba(255,255,255,0.8);
+    font-size: 1.2rem;
+    transform: scale(0.8);
+    transition: transform 0.3s;
+  }
+  .photo-item:hover .photo-overlay-icon { transform: scale(1); }
+
+  /* skeleton loader */
+  .photo-skeleton {
+    background: linear-gradient(90deg, var(--surface) 25%, #1e1e1e 50%, var(--surface) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.4s infinite;
+    aspect-ratio: 3/2;
+    margin-bottom: 2px;
+  }
+  @keyframes shimmer {
+    from { background-position: 200% 0; }
+    to   { background-position: -200% 0; }
+  }
+
+  /* empty state */
+  .empty-album {
+    text-align: center;
+    padding: 6rem 2rem;
+    color: var(--muted);
+  }
+  .empty-album h2 {
+    font-family: var(--font-display);
+    font-size: 2rem;
+    font-weight: 300;
+    margin-bottom: 0.8rem;
+  }
+
+  /* loading spinner */
+  .loading-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6rem;
+  }
+  .spinner {
+    width: 36px; height: 36px;
+    border: 2px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.9s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  @media (max-width: 900px) {
+    .album-header { padding: 5rem 1.5rem 2rem; flex-direction: column; align-items: flex-start; }
+    .photo-grid { columns: 2; }
+    .photo-grid.cols-4 { columns: 2; }
+    .subfolders { padding: 0 1.5rem 2rem; }
+  }
+  @media (max-width: 560px) {
+    .photo-grid, .photo-grid.cols-2, .photo-grid.cols-4 { columns: 1; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="album-header">
+  <div class="album-header-left">
+    <div class="album-breadcrumb">
+      <a href="/">Портфолио</a>
+      <span>›</span>
+      <span>{{ album_name }}</span>
+    </div>
+    <h1 class="album-title"><em>{{ album_name }}</em></h1>
+    <p class="album-meta" id="photo-count">
+      {% if images %}{{ images|length }} фотографий{% endif %}
+    </p>
+  </div>
+  <div class="album-header-right">
+    <button class="view-btn" onclick="setCols(2)">▪▪</button>
+    <button class="view-btn active" onclick="setCols(3)">▪▪▪</button>
+    <button class="view-btn" onclick="setCols(4)">▪▪▪▪</button>
+  </div>
+</div>
+
+{% if subfolders %}
+<div class="subfolders">
+  {% for sf in subfolders %}
+  <a class="subfolder-link" href="/album?path={{ sf.path | urlencode }}">
+    ◫ {{ sf.name }}
+  </a>
+  {% endfor %}
+</div>
+{% endif %}
+
+<div id="grid-container">
+  {% if images %}
+  <div class="photo-grid" id="photo-grid">
+    {% for img in images %}
+    <div class="photo-item" onclick="openPhoto({{ loop.index0 }})">
+      <img
+        src="/proxy/preview?url={{ img.preview | urlencode }}"
+        alt="{{ img.name }}"
+        loading="lazy"
+        decoding="async"
+      />
+      <div class="photo-overlay">
+        <div class="photo-overlay-icon">⊕</div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty-album">
+    <h2>Фотографии не найдены</h2>
+    <p>В папке <code>{{ album_path }}</code> нет изображений</p>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  // Pass image data from server to JS
+  const IMAGES = {{ images | tojson }};
+
+  function openPhoto(idx) {
+    openLightbox(IMAGES, idx);
+  }
+
+  function setCols(n) {
+    const grid = document.getElementById('photo-grid');
+    if (!grid) return;
+    grid.className = 'photo-grid' + (n !== 3 ? ` cols-${n}` : '');
+    document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
+    event.target.classList.add('active');
+  }
+</script>
+{% endblock %}
