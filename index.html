@@ -1,0 +1,217 @@
+{% extends "base.html" %}
+
+{% block head %}
+<style>
+  /* ── Hero ── */
+  .hero {
+    height: 55vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    padding: 2rem;
+  }
+  .hero::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 50% 60%, rgba(200,169,126,0.06) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero-tag {
+    font-family: var(--font-body);
+    font-size: 0.7rem;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 1.2rem;
+    opacity: 0;
+    animation: slideUp 0.8s 0.2s forwards;
+  }
+  .hero h1 {
+    font-family: var(--font-display);
+    font-size: clamp(3rem, 8vw, 6rem);
+    font-weight: 300;
+    line-height: 1.05;
+    letter-spacing: -0.01em;
+    opacity: 0;
+    animation: slideUp 0.9s 0.4s forwards;
+  }
+  .hero h1 em {
+    font-style: italic;
+    color: var(--accent);
+  }
+  .hero-sub {
+    margin-top: 1.5rem;
+    color: var(--muted);
+    font-size: 0.85rem;
+    letter-spacing: 0.05em;
+    opacity: 0;
+    animation: slideUp 0.9s 0.6s forwards;
+  }
+  .hero-line {
+    width: 1px; height: 60px;
+    background: linear-gradient(to bottom, var(--accent), transparent);
+    margin: 2.5rem auto 0;
+    opacity: 0;
+    animation: slideUp 0.9s 0.8s forwards;
+  }
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── Album grid ── */
+  .section-label {
+    text-align: center;
+    font-size: 0.65rem;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 0 3rem 2rem;
+  }
+
+  .albums-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 2px;
+    padding: 0;
+  }
+  .album-card {
+    position: relative;
+    aspect-ratio: 4/3;
+    overflow: hidden;
+    cursor: pointer;
+    text-decoration: none;
+    display: block;
+    background: var(--surface);
+  }
+  .album-card img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    transition: transform 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 0.3s;
+    filter: brightness(0.75) saturate(0.9);
+  }
+  .album-card:hover img {
+    transform: scale(1.06);
+    filter: brightness(0.9) saturate(1.0);
+  }
+  .album-card-placeholder {
+    width: 100%; height: 100%;
+    background: linear-gradient(135deg, var(--surface), #1e1e1e);
+    display: flex; align-items: center; justify-content: center;
+    color: var(--border);
+    font-size: 3rem;
+  }
+  .album-card-info {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column; justify-content: flex-end;
+    padding: 2rem;
+    background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 60%);
+    opacity: 0;
+    transition: opacity 0.35s;
+  }
+  .album-card:hover .album-card-info { opacity: 1; }
+  .album-card-always {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    padding: 2rem;
+    background: linear-gradient(to top, rgba(0,0,0,0.65) 0%, transparent 100%);
+  }
+  .album-name {
+    font-family: var(--font-display);
+    font-size: 1.6rem;
+    font-weight: 300;
+    letter-spacing: 0.02em;
+    color: #fff;
+    line-height: 1.2;
+  }
+  .album-count {
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.55);
+    margin-top: 0.4rem;
+  }
+  .album-arrow {
+    position: absolute; top: 1.5rem; right: 1.5rem;
+    width: 36px; height: 36px;
+    border: 1px solid rgba(255,255,255,0.3);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    color: rgba(255,255,255,0.7);
+    font-size: 1rem;
+    transform: translateX(-6px);
+    transition: transform 0.3s, border-color 0.3s;
+  }
+  .album-card:hover .album-arrow {
+    transform: translateX(0);
+    border-color: rgba(255,255,255,0.7);
+  }
+
+  /* single album → redirect to album page */
+
+  /* empty state */
+  .empty-state {
+    text-align: center;
+    padding: 8rem 2rem;
+    color: var(--muted);
+  }
+  .empty-state h2 {
+    font-family: var(--font-display);
+    font-size: 2rem;
+    font-weight: 300;
+    margin-bottom: 1rem;
+  }
+  .empty-state p { font-size: 0.85rem; }
+  .empty-state code {
+    background: var(--surface);
+    padding: 0.2em 0.5em;
+    border-radius: 3px;
+    font-size: 0.8rem;
+    color: var(--accent);
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="hero">
+  <div class="hero-tag">Photography</div>
+  <h1>{% if site_author %}<em>{{ site_author }}</em>{% else %}<em>{{ site_title }}</em>{% endif %}</h1>
+  {% if site_author %}<p class="hero-sub">{{ site_title }}</p>{% endif %}
+  <div class="hero-line"></div>
+</section>
+
+{% if albums %}
+  {% if single_album %}
+    {# Redirect to the single album #}
+    <script>window.location.href = '/album?path={{ albums[0].path | urlencode }}';</script>
+  {% else %}
+    <p class="section-label">Альбомы &nbsp;—&nbsp; {{ albums|length }}</p>
+    <div class="albums-grid">
+      {% for album in albums %}
+      <a class="album-card" href="/album?path={{ album.path | urlencode }}">
+        {% if album.cover %}
+          <img src="/proxy/preview?url={{ album.cover | urlencode }}" alt="{{ album.name }}" loading="lazy" />
+        {% else %}
+          <div class="album-card-placeholder">◻</div>
+        {% endif %}
+        <div class="album-card-always">
+          <div class="album-name">{{ album.name }}</div>
+          <div class="album-count">{{ album.count }} фото</div>
+        </div>
+        <div class="album-card-info"></div>
+        <div class="album-arrow">→</div>
+      </a>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% else %}
+  <div class="empty-state">
+    <h2>Альбомы не найдены</h2>
+    <p>Укажите пути к папкам на Яндекс Диске через переменную окружения<br>
+       <code>ALBUM_PATHS=/Фото/Свадьба,/Фото/Путешествия</code></p>
+  </div>
+{% endif %}
+{% endblock %}
