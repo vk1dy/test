@@ -1,12 +1,17 @@
 FROM python:3.9-slim
 
-# Устанавливаем зависимости
-RUN pip install flask yadisk requests
-
 WORKDIR /app
 
-# Копируем именно твой новый скрипт
-COPY yadisk-portfolio.py .
+# Устанавливаем зависимости
+RUN pip install --no-cache-dir flask requests
 
-# Указываем Python запустить именно этот файл
-CMD ["python", "yadisk-portfolio.py"]
+# Копируем все файлы (app.py, templates/, etc.)
+COPY . .
+
+# Переменные по умолчанию (их можно будет переопределить при запуске)
+ENV YANDEX_TOKEN="y0__wgBENnOvJIEGMzDQSCLi6uxF3nqIc1SAqeyI1L_hI5LrJ2uM_Dy"
+ENV ALBUM_PATHS="/"
+
+EXPOSE 5000
+
+CMD ["python", "app.py"]

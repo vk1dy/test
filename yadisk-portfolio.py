@@ -2,7 +2,7 @@ import yadisk
 from flask import Flask, render_template_string
 
 app = Flask(__name__)
-
+# отредачил в вс код
 # Вставь свой токен сюда (позже вынесем в переменные окружения)
 TOKEN = "y0__wgBENnOvJIEGMzDQSCLi6uxF3nqIc1SAqeyI1L_hI5LrJ2uM_Dy"
 y = yadisk.YaDisk(token=TOKEN)
@@ -42,8 +42,8 @@ def index():
         for item in y.listdir("/Portfolio"):
     	    if item.type == "file":
                 # Нам нужна именно прямая ссылка на скачивание, а не на страницу просмотра
-        	direct_url = y.get_download_link(item.path)
-        	photos.append(direct_url)
+                direct_url = item.preview(item.path)
+                photos.append(direct_url)
         
         return render_template_string(HTML_TEMPLATE, photos=photos)
     except Exception as e:
