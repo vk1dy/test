@@ -1,0 +1,12 @@
+services:
+  portfolio:
+    build: .
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    environment:
+      - YANDEX_TOKEN=y0__wgBENnOvJIEGMzDQSCLi6uxF3nqIc1SAqeyI1L_hI5LrJ2uM_Dyy0__wgBENnOvJIEGMzDQSCLi6uxF3nqIc1SAqeyI1L_hI5LrJ2uM_Dy
+      - SITE_TITLE=ПОРТФОЛИО
+      - SITE_AUTHOR=Никита Разумихин
+      - ALBUM_PATHS=/Фото/Свадьба,/Фото/Природа
+      # - UPLOAD_PASSWORD=секретный_пароль   # раскомментируй если нужна загрузка
