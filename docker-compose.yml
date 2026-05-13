@@ -10,3 +10,27 @@ services:
       - SITE_AUTHOR=Никита Разумихин
       - ALBUM_PATHS=/Фото/Свадьба,/Фото/Природа
       # - UPLOAD_PASSWORD=секретный_пароль   # раскомментируй если нужна загрузка
+
+      # Разделы: "Название:путь_на_диске" через запятую
+      - SECTIONS=Концерты:Portfolio
+
+      # Теги под названием раздела (опционально)
+      - SECTION_TAGS=Концерт:Portfolio,Репортаж:Reportage,Портреты:Portrait,Природа:Nature
+
+      # Текст в hero
+      - HERO_DESCRIPTION=Репортажная фотография. Москва 
+
+      # Контактный email в footer
+      - CONTACT_EMAIL=ivan@example.com
+
+      # Секция "О себе" (до 3 ячеек)
+      - ABOUT_1_LABEL=Локация
+      - ABOUT_1_VALUE=Москва
+      
+      - ABOUT_2_LABEL=Опыт
+      - ABOUT_2_VALUE=3 года
+      - ABOUT_2_SUB=Более 50 съёмок
+
+      - ABOUT_3_LABEL=Контакт
+      - ABOUT_3_VALUE=razumihinnikita@gmail.com
+      

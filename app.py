@@ -35,7 +35,7 @@ def yd_list_folder(path: str, limit: int = 200) -> list[dict]:
         "fields": "_embedded.items.name,_embedded.items.type,_embedded.items.mime_type,"
                   "_embedded.items.preview,_embedded.items.sizes,_embedded.items.path,"
                   "_embedded.items.created",
-        "preview_size": "M",
+        "preview_size": "XXL",
         "preview_crop": "false",
     }
     resp = requests.get(YANDEX_API, headers=yd_headers(), params=params, timeout=15)
@@ -45,6 +45,32 @@ def yd_list_folder(path: str, limit: int = 200) -> list[dict]:
     items = resp.json().get("_embedded", {}).get("items", [])
     return items
 
+def parse_sections_config(env_str: str) -> list[dict]:
+    """
+    Разбирает строку вида "Свадьбы:/Фото/Свадьбы,Природа:/Фото/Природа"
+    в список словарей [{"name": "Свадьбы", "path": "/Фото/Свадьбы"}, ...]
+    """
+    result = []
+    if not env_str:
+        return result
+    for item in env_str.split(","):
+        item = item.strip()
+        if ":" not in item:
+            continue
+        name, path = item.split(":", 1)
+        result.append({"name": name.strip(), "path": path.strip()})
+    return result
+
+SECTIONS_CONFIG = parse_sections_config(os.environ.get("SECTIONS", ""))
+
+# Описание для hero (опционально)
+HERO_DESCRIPTION = os.environ.get(
+    "HERO_DESCRIPTION",
+    "Фотографии, которые рассказывают истории. Выберите раздел, чтобы погрузиться в работы."
+)
+
+# Контактный email (опционально)
+CONTACT_EMAIL = os.environ.get("CONTACT_EMAIL", "")
 
 def is_image(item: dict) -> bool:
     name = item.get("name", "").lower()
@@ -66,6 +92,88 @@ def get_download_url(path: str) -> str:
 
 
 # ─── Routes ───────────────────────────────────────────────────────────────────
+@app.route("/")
+def landing():
+    sections = []
+
+    for sec in SECTIONS_CONFIG:
+        try:
+            items = yd_list_folder(sec["path"], limit=100)
+            images  = [i for i in items if is_image(i)]
+            folders = [i for i in items if i.get("type") == "dir"]
+
+            # Обложка — первое фото в папке
+            cover = images[0].get("preview") if images else None
+
+            # Если в папке только подпапки — попробуем взять обложку из первой
+            if not cover and folders:
+                try:
+                    sub_items = yd_list_folder(folders[0]["path"], limit=5)
+                    sub_images = [i for i in sub_items if is_image(i)]
+                    cover = sub_images[0].get("preview") if sub_images else None
+                except Exception:
+                    pass
+
+            # Подсчёт фотографий (включая вложенные папки — приблизительно)
+            total_count = len(images)
+            if folders:
+                total_count = f"{total_count}+" if total_count else f"{len(folders)} альбомов"
+
+            sections.append({
+                "name":  sec["name"],
+                "path":  sec["path"],
+                "url":   f"/album?path={sec['path']}",
+                "cover": cover,
+                "count": total_count,
+                "tag":   SECTION_TAGS.get(sec["name"], "Portfolio"),
+            })
+
+        except Exception as e:
+            logger.error(f"Landing: failed to load section {sec['name']}: {e}")
+            # Добавляем раздел без обложки, чтобы он всё равно отображался
+            sections.append({
+                "name":  sec["name"],
+                "path":  sec["path"],
+                "url":   f"/album?path={sec['path']}",
+                "cover": None,
+                "count": 0,
+                "tag":   SECTION_TAGS.get(sec["name"], "Portfolio"),
+            })
+
+    # Секция "О себе" (опционально, из переменных окружения)
+    about_cells = _build_about_cells()
+
+    from datetime import datetime
+    return render_template(
+        "landing.html",
+        sections=sections,
+        site_title=SITE_TITLE,
+        site_author=SITE_AUTHOR,
+        hero_description=HERO_DESCRIPTION,
+        contact_email=CONTACT_EMAIL,
+        about_cells=about_cells,
+        now=datetime.now(),
+    )
+
+
+def _build_about_cells() -> list[dict]:
+    """
+    Формирует ячейки секции «О себе» из переменных окружения.
+    Переменные: ABOUT_1_LABEL, ABOUT_1_VALUE, ABOUT_1_SUB (и 2, 3)
+    """
+    cells = []
+    for i in range(1, 4):
+        label = os.environ.get(f"ABOUT_{i}_LABEL", "")
+        value = os.environ.get(f"ABOUT_{i}_VALUE", "")
+        if label and value:
+            cells.append({
+                "label": label,
+                "value": value,
+                "sub":   os.environ.get(f"ABOUT_{i}_SUB", ""),
+            })
+    return cells
+
+
 
 @app.route("/")
 def index():
