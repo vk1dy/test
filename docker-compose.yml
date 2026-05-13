@@ -12,10 +12,10 @@ services:
       # - UPLOAD_PASSWORD=секретный_пароль   # раскомментируй если нужна загрузка
 
       # Разделы: "Название:путь_на_диске" через запятую
-      - SECTIONS=Концерты:Portfolio
+      - SECTIONS=Концерты:/Portfolio
 
       # Теги под названием раздела (опционально)
-      - SECTION_TAGS=Концерт:Portfolio,Репортаж:Reportage,Портреты:Portrait,Природа:Nature
+      - SECTION_TAGS=Концерт:/Portfolio,
 
       # Текст в hero
       - HERO_DESCRIPTION=Репортажная фотография. Москва 
