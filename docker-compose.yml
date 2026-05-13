@@ -8,7 +8,7 @@ services:
       - YANDEX_TOKEN=y0__wgBENnOvJIEGMzDQSCLi6uxF3nqIc1SAqeyI1L_hI5LrJ2uM_Dyy0__wgBENnOvJIEGMzDQSCLi6uxF3nqIc1SAqeyI1L_hI5LrJ2uM_Dy
       - SITE_TITLE=ПОРТФОЛИО
       - SITE_AUTHOR=Никита Разумихин
-      - ALBUM_PATHS=/Фото/Свадьба,/Фото/Природа
+      - ALBUM_PATHS=/Portfolio, /Разные фотографии/портфолио/разные фотки
       # - UPLOAD_PASSWORD=секретный_пароль   # раскомментируй если нужна загрузка
 
       # Разделы: "Название:путь_на_диске" через запятую
