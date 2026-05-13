@@ -12,7 +12,7 @@ services:
       # - UPLOAD_PASSWORD=секретный_пароль   # раскомментируй если нужна загрузка
 
       # Разделы: "Название:путь_на_диске" через запятую
-      - SECTIONS=Концерты:/Portfolio
+      - SECTIONS=Концерты:/Portfolio, Разное:/Разные фотографии/портфолио/разные фотки
 
       # Теги под названием раздела (опционально)
       - SECTION_TAGS=Концерт:/Portfolio,
@@ -21,7 +21,7 @@ services:
       - HERO_DESCRIPTION=Репортажная фотография. Москва 
 
       # Контактный email в footer
-      - CONTACT_EMAIL=ivan@example.com
+      - CONTACT_EMAIL=razumihinnikita@gmail.com
 
       # Секция "О себе" (до 3 ячеек)
       - ABOUT_1_LABEL=Локация
