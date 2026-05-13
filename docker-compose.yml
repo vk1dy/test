@@ -15,7 +15,7 @@ services:
       - SECTIONS=Концерты:/Portfolio, Разное:/Разные фотографии/портфолио/разные фотки
 
       # Теги под названием раздела (опционально)
-      - SECTION_TAGS=Концерт:/Portfolio,
+      - SECTION_TAGS=Концерт:/Portfolio
 
       # Текст в hero
       - HERO_DESCRIPTION=Репортажная фотография. Москва 
