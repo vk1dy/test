@@ -35,7 +35,7 @@ def yd_list_folder(path: str, limit: int = 200) -> list[dict]:
         "fields": "_embedded.items.name,_embedded.items.type,_embedded.items.mime_type,"
                   "_embedded.items.preview,_embedded.items.sizes,_embedded.items.path,"
                   "_embedded.items.created",
-        "preview_size": "XXL",
+        "preview_size": "XXXL",
         "preview_crop": "false",
     }
     resp = requests.get(YANDEX_API, headers=yd_headers(), params=params, timeout=15)
@@ -173,9 +173,6 @@ def _build_about_cells() -> list[dict]:
             })
     return cells
 
-
-
-@app.route("/")
 def index():
     albums = []
     for folder_path in ALBUM_PATHS:
